@@ -1,7 +1,5 @@
 package com.company;
 
-import sun.awt.Mutex;
-
 import java.util.concurrent.Semaphore;
 
 /**
@@ -9,25 +7,42 @@ import java.util.concurrent.Semaphore;
  * @version 1.0.
  * @since 12/27/15
  */
-public class Bus {
-    private Mutex busStopMutex;
+public class Bus extends Thread{
+    private Semaphore busStopMutex;
     private int noOfSeats;
     private BusStop busStop;
+    private Semaphore busReturn;
+    int id;
 
+    public void run(){
+        while (true) {
+            System.out.println(".....The " + id + " Bus has reached.");
+            reachBusStop();
+        }
+    }
     public Bus(BusStop busStop){
+        this.busStop = busStop;
         this.busStopMutex = busStop.getBusStopMutex();
+        this.busReturn= busStop.getbusReturn();
         noOfSeats = 50;
     }
 
     public void reachBusStop(){
-        busStopMutex.lock();
+        try {
+            busStopMutex.acquire();
+            if (busStop.getRaiders() > 0) {
 
-        busStop.setBus(this);
-        busStop.ridersGetIn(noOfSeats);
+                busReturn.release();
+                busStop.getAllAboard().acquire();
+
+            }
+            busStopMutex.release();
+        }catch (Exception e){}
+        depart();
 
     }
 
     public void depart(){
-        busStopMutex.unlock();
+        System.out.println(" ------------------------The"+id+" bus departed.-------------------------------------------");
     }
 }

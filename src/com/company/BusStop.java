@@ -1,7 +1,5 @@
 package com.company;
 
-import sun.awt.Mutex;
-
 import java.util.concurrent.Semaphore;
 
 /**
@@ -11,45 +9,50 @@ import java.util.concurrent.Semaphore;
  */
 public class BusStop {
     //contains the busStop mutex and the queue Semaphore
-    private Mutex busStopMutex;
+    private Semaphore busStopMutex;
     private Semaphore queue;
-    private Bus bus;
     private int queueSize;
+    private int raiders=0;
+    private Semaphore busReturn;
+    private Semaphore AllAboard;
 
-    public synchronized void ridersGetIn(int no){
-        queueSize = no;
-        for(int i=0;i<no;i++){
-            queue.release();
-        }
-    }
-
-    public synchronized void getIn(){
-        queueSize--;
-        if(queueSize==0)
-            bus.depart();
-    }
-
-    public Mutex getBusStopMutex() {
-        return busStopMutex;
-    }
-
-    public void setBusStopMutex(Mutex busStopMutex) {
+    public BusStop(Semaphore busStopMutex,Semaphore busReturn, Semaphore allAboard, Semaphore queue){
         this.busStopMutex = busStopMutex;
+        this.queue = queue;
+        this.busReturn = busReturn;
+        this.AllAboard = allAboard;
+    }
+    public synchronized int getRaiders(){
+        return raiders;
+    }
+
+    public synchronized void enterBusStopQueue(){
+        raiders++;
+    }
+    public synchronized void getIn(){
+        raiders--;
     }
 
     public Semaphore getQueue() {
+        if(queue == null)
+            queue = new Semaphore(0);
+
         return queue;
     }
 
-    public void setQueue(Semaphore queue) {
-        this.queue = queue;
+    public Semaphore getBusStopMutex() {
+        return busStopMutex;
     }
 
-    public Bus getBus() {
-        return bus;
+    public int getQueueSize() {
+        return queueSize;
     }
 
-    public void setBus(Bus bus) {
-        this.bus = bus;
+    public Semaphore getbusReturn() {
+        return busReturn;
+    }
+
+    public Semaphore getAllAboard() {
+        return AllAboard;
     }
 }
